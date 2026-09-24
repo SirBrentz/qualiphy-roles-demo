@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Qualiphy · Roles &amp; Permissions (mockup)</title>
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">Q</div>
+      <div>
+        <div class="brand-name">Qualiphy</div>
+        <div class="brand-sub">Super Admin</div>
+      </div>
+    </div>
+
+    <nav class="nav" id="nav">
+      <div class="nav-label">Access control</div>
+      <button class="nav-item" data-view="roles"><span class="ico">&#9679;</span> Roles <span class="cnt" id="cnt-roles"></span></button>
+      <button class="nav-item" data-view="matrix"><span class="ico">&#9638;</span> Permissions <span class="cnt" id="cnt-caps"></span></button>
+      <button class="nav-item" data-view="org"><span class="ico">&#9783;</span> Organizations</button>
+      <button class="nav-item" data-view="preview"><span class="ico">&#9673;</span> Preview as&hellip;</button>
+      <div class="nav-label" style="margin-top:18px">Product</div>
+      <button class="nav-item" data-view="decisions"><span class="ico">&#63;</span> Open decisions <span class="cnt" id="cnt-dec"></span></button>
+      <button class="nav-item" data-view="export"><span class="ico">&#8595;</span> Export spec</button>
+    </nav>
+
+    <div class="sidebar-foot">
+      Mockup for product discovery.<br />
+      Fake data only. Not connected to any Qualiphy environment.
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1 id="page-title">Roles</h1>
+        <div class="sub" id="page-sub"></div>
+      </div>
+      <div class="topbar-actions">
+        <span class="mock-flag">Mockup</span>
+        <button class="btn ghost" id="btn-reset">Reset changes</button>
+      </div>
+    </header>
+
+    <div class="content" id="view"></div>
+  </main>
+
+</div>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
