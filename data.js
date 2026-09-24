@@ -1,155 +1,131 @@
-/* Qualiphy Roles & Permissions - mockup data
-   FAKE DATA ONLY. Public share build: sources and internal notes removed. */
+/* Roles & Permissions demo: data. Public share build: internal notes, sources and names removed. */
+(function () {
+  const D = (window.ROLES_DEMO = {});
 
-const ROLES = [
-  // --- Qualiphy-side ---
-  { id: 'super_admin', name: 'Super Admin', side: 'qualiphy', blurb: 'Full platform access. Qualiphy staff only.', refs: [], proposed: false },
-  { id: 'support_specialist', name: 'Support Specialist', side: 'qualiphy', blurb: 'Tier 1-2 support. Needs visibility without clinical authority.', refs: [], proposed: false },
-  { id: 'exam_quality_manager', name: 'Exam Quality Manager', side: 'qualiphy', blurb: 'Maintains exam templates, macros and order sets.', refs: [], proposed: false },
-  { id: 'rx_provider', name: 'Rx Provider', side: 'qualiphy', blurb: 'Reviews and issues prescriptions. Not necessarily a GFE provider.', refs: [], proposed: false },
-  { id: 'provider', name: 'Provider', side: 'qualiphy', blurb: 'Conducts GFE screenings.', refs: [], proposed: false },
-  { id: 'collab_physician', name: 'Collaborating Physician', side: 'qualiphy', blurb: 'Chart review and clinical oversight.', refs: [], proposed: false },
-  // --- Clinic-side ---
-  { id: 'medical_director', name: 'Medical Director', side: 'clinic', blurb: 'Oversees one or more clinics.', refs: [], proposed: false },
-  { id: 'clinic_admin', name: 'Clinic Admin', side: 'clinic', blurb: 'Owns the account. Billing, settings, credentials.', refs: [], proposed: false },
-  { id: 'clinic_manager', name: 'Clinic Manager', side: 'clinic', blurb: 'Day-to-day operator. Financial visibility is the open question.', refs: [], proposed: false },
-  { id: 'clinic_staff', name: 'Clinic Staff', side: 'clinic', blurb: 'Sends invites, sees nothing financial.', refs: [], proposed: true },
-];
+  D.ACCOUNT = { name: 'Mock Wellness Clinic', you: 'Alex Rivera (Admin)' };
 
-const AREAS = [
-  { id: 'billing', name: 'Billing & finance' },
-  { id: 'exams', name: 'Patients & exams' },
-  { id: 'rx', name: 'Prescribing' },
-  { id: 'clinical', name: 'Clinical work' },
-  { id: 'clinicadmin', name: 'Clinic administration' },
-  { id: 'integrations', name: 'Integrations & credentials' },
-  { id: 'platform', name: 'Platform' },
-];
+  D.LOCATIONS = ['Mock Wellness Clinic', 'Mock Wellness Clinic - Santa Monica'];
 
-/* grant values: true | false | 'conditional'
-   'conditional' means "allowed, but gated by a setting another role controls" -
-   that distinction matters for pricing visibility. */
-const CAPABILITIES = [
-  // Billing
-  { id: 'billing.export', area: 'billing', name: 'Export billing summaries', detail: 'Download billing for their own clinic.', refs: [], urgent: true,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, clinic_manager: 'conditional', medical_director: true } },
-  { id: 'billing.bulk_export_org', area: 'billing', name: 'Bulk export across all sub-locations', detail: 'One export covering every clinic under a master account.', refs: [], urgent: true,
-    g: { super_admin: true, clinic_admin: true, medical_director: true } },
-  { id: 'billing.view_pricing', area: 'billing', name: 'See exam and medication pricing', detail: 'Clinic Admins want the ability to hide this from Managers.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, clinic_manager: 'conditional', medical_director: true } },
-  { id: 'billing.view_failed_payments', area: 'billing', name: 'See failed and skipped payments', detail: 'Failed and skipped payments alongside the billing export.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true } },
-  { id: 'billing.waive_reprocess', area: 'billing', name: 'Waive billing on a reprocessed Rx', detail: 'Waive the charge when a prescription is reprocessed.', refs: [], urgent: false,
-    g: { super_admin: true } },
+  D.MANAGERS = [
+    { id: 501, first: 'Danielle', last: 'Ortiz', phone: '(155) 501-0050', email: 'danielle.ortiz@example.com', location: 'Mock Wellness Clinic', roleId: 2 },
+    { id: 502, first: 'Marcus', last: 'Webb', phone: '(155) 501-0050', email: 'marcus.webb@example.com', location: 'Mock Wellness Clinic - Santa Monica', roleId: 2 },
+    { id: 503, first: 'Priya', last: 'Shah', phone: '(155) 501-0050', email: 'priya.shah@example.com', location: 'Mock Wellness Clinic', roleId: 3 },
+  ];
 
-  // Patients & exams
-  { id: 'exam.send_invite', area: 'exams', name: 'Send an exam invite', detail: 'Baseline capability for every clinic-side role.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, clinic_manager: true, clinic_staff: true, medical_director: true } },
-  { id: 'exam.view_deferred', area: 'exams', name: 'View deferred exams and the reason', detail: 'A queue of deferred exams, each with its reason.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, clinic_manager: true, medical_director: true, collab_physician: true } },
-  { id: 'exam.edit_patient', area: 'exams', name: 'Edit patient details after submission', detail: 'Including while the exam is still pending.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, provider: 'conditional' } },
-  { id: 'exam.move', area: 'exams', name: 'Move or re-assign a GFE exam', detail: 'Move an exam to the correct patient profile.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true } },
-  { id: 'exam.hide', area: 'exams', name: 'Hide specific exams from view', detail: 'MD or Admin restricts which exams their staff can send.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true, medical_director: true } },
-  { id: 'exam.bulk_deactivate', area: 'exams', name: 'Bulk deactivate exams', detail: 'Toggle many exams off at once rather than one by one.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true } },
-  { id: 'exam.consult_history', area: 'exams', name: 'View or export consultation history', detail: 'Per clinic, including duration.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, medical_director: true } },
-  { id: 'exam.lock_api_answers', area: 'exams', name: 'Edit API-populated intake answers', detail: 'Change intake answers that arrived through the API.', refs: [], urgent: false,
-    g: { super_admin: true, provider: 'conditional', rx_provider: 'conditional' } },
+  D.AREAS = ['Patients & exams', 'Billing & finance', 'Clinic administration', 'Integrations & credentials', 'Roles'];
 
-  // Prescribing
-  { id: 'rx.prescribe_from_profile', area: 'rx', name: 'Prescribe from the patient profile', detail: 'Any pharmacy, any order set attached to the exam.', refs: [], urgent: false,
-    g: { super_admin: true, rx_provider: true } },
-  { id: 'rx.reprocess_denied', area: 'rx', name: 'Reprocess a denied prescription', detail: 'Send a denied prescription again once it is fixed.', refs: [], urgent: false,
-    g: { super_admin: true, rx_provider: true } },
-  { id: 'rx.override_pharmacy', area: 'rx', name: 'Override the pharmacy on an order', detail: 'Switch pharmacy after the GFE has been completed.', refs: [], urgent: false,
-    g: { super_admin: true, rx_provider: true } },
-  { id: 'rx.open_pharmacies', area: 'rx', name: 'Prescribe to any pharmacy', detail: 'Super-admin gated toggle on an Rx Provider.', refs: [], urgent: false,
-    g: { super_admin: true, rx_provider: 'conditional' } },
-  { id: 'rx.all_patients', area: 'rx', name: 'See patients across all clinics', detail: 'Cross-clinic patient access for the providers who need it.', refs: [], urgent: false,
-    g: { super_admin: true, rx_provider: 'conditional', provider: 'conditional' } },
+  /* 23 clinic-side permissions, same keys and wording as the in-portal prototype. */
+  D.PERMISSIONS = [
+    { key: 'exam.send_invite', area: 'Patients & exams', name: 'Send exam invites',
+      detail: 'Start a new exam for a patient. Managers can do this today.' },
+    { key: 'exam.view_results', area: 'Patients & exams', name: 'View results and previous exams',
+      detail: 'The Results tab. Managers can do this today.' },
+    { key: 'exam.view_deferred', area: 'Patients & exams', name: 'View deferred exams and the reason',
+      detail: 'See deferred exams, each with the reason.' },
+    { key: 'exam.edit_patient', area: 'Patients & exams', name: 'Edit patient details after submission',
+      detail: 'Including while the exam is still pending.' },
+    { key: 'exam.move', area: 'Patients & exams', name: 'Move an exam to another patient profile',
+      detail: 'Fix an exam sent against the wrong patient.' },
+    { key: 'exam.hide', area: 'Patients & exams', name: 'Hide specific exams from the send list',
+      detail: 'Restrict which exams staff can send.' },
+    { key: 'exam.bulk_deactivate', area: 'Patients & exams', name: 'Bulk deactivate exams',
+      detail: 'Toggle many exams off at once instead of one by one.' },
+    { key: 'exam.consult_history', area: 'Patients & exams', name: 'View or export consultation history',
+      detail: 'Per location, including consultation duration.' },
+    { key: 'exam.intake_forms', area: 'Patients & exams', name: 'Manage intake forms',
+      detail: 'The Intake Forms tab. Managers can do this today.' },
 
-  // Clinical work
-  { id: 'clinical.conduct_screening', area: 'clinical', name: 'Conduct a GFE screening', detail: 'Run the patient visit and reach a verdict.', refs: [], urgent: false,
-    g: { super_admin: true, provider: true, rx_provider: true } },
-  { id: 'clinical.decide_exam', area: 'clinical', name: 'Approve, defer or reject an exam', detail: 'The clinical decision itself.', refs: [], urgent: false,
-    g: { super_admin: true, provider: true, rx_provider: true } },
-  { id: 'clinical.chart_review', area: 'clinical', name: 'Review and comment on charts', detail: 'Collaborating physician oversight, with edit and comment.', refs: [], urgent: false,
-    g: { super_admin: true, collab_physician: true, medical_director: true } },
-  { id: 'clinical.reaccess_inprogress', area: 'clinical', name: 'Re-access an in-progress exam', detail: 'Pick up an exam another provider started, or resume your own.', refs: [], urgent: false,
-    g: { super_admin: true, provider: true, rx_provider: true, collab_physician: true } },
-  { id: 'clinical.manage_macros', area: 'clinical', name: 'Create and edit exam macros', detail: 'Reusable clinical text blocks. The reason the Exam Quality Manager role exists.', refs: [], urgent: false,
-    g: { super_admin: true, exam_quality_manager: true } },
-  { id: 'clinical.manage_templates', area: 'clinical', name: 'Create and edit exam templates and order sets', detail: 'Build and change exam templates and order sets without engineering.', refs: [], urgent: false,
-    g: { super_admin: true, exam_quality_manager: true } },
-  { id: 'clinical.view_own_licenses', area: 'clinical', name: 'See own licenses, status and collaborations', detail: 'Providers see their own license state and collaborations.', refs: [], urgent: false,
-    g: { super_admin: true, exam_quality_manager: true, provider: true, rx_provider: true, collab_physician: true } },
-  { id: 'clinical.view_own_payout', area: 'clinical', name: 'See own payout in real time', detail: 'Relevant to part-time and 1099 providers.', refs: [], urgent: false,
-    g: { super_admin: true, provider: true, rx_provider: true, collab_physician: true } },
+    { key: 'billing.view_pricing', area: 'Billing & finance', name: 'See exam and medication pricing',
+      detail: 'Clinic Admins have asked to be able to hide this from Managers. Managers see it by default (decided Sep 15).' },
+    { key: 'billing.export', area: 'Billing & finance', name: 'Export billing summaries',
+      detail: 'Managers cannot do this today.' },
+    { key: 'billing.bulk_export_org', area: 'Billing & finance', name: 'Export billing across all locations', orgOnly: true,
+      detail: 'One export covering every location under the account.' },
+    { key: 'billing.view_failed_payments', area: 'Billing & finance', name: 'See failed and skipped payments',
+      detail: 'Failed and skipped payments alongside billing.' },
 
-  // Clinic administration
-  { id: 'clinic.blacklist_provider', area: 'clinicadmin', name: 'Block a provider from this clinic', detail: 'And the reverse: a provider declining a clinic.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true, medical_director: true } },
-  { id: 'clinic.view_id', area: 'clinicadmin', name: 'See their own Clinic ID', detail: 'Show the Clinic ID in the portal.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, clinic_manager: true, medical_director: true, provider: true } },
-  { id: 'clinic.see_managers', area: 'clinicadmin', name: 'See managers assigned to a clinic', detail: 'Names and contact details.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, medical_director: true } },
-  { id: 'clinic.suspend', area: 'clinicadmin', name: 'Suspend or deactivate a clinic', detail: 'Retaining the ability to view prior exams.', refs: [], urgent: false,
-    g: { super_admin: true } },
-  { id: 'clinic.view_suspended', area: 'clinicadmin', name: 'View deleted or suspended clinics', detail: 'Support can look up deleted or suspended clinics.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true } },
-  { id: 'clinic.email_cc', area: 'clinicadmin', name: 'Choose who is cc\'d on patient email', detail: 'Per-clinic control of Qualiphy outbound.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true } },
-  { id: 'clinic.edit_contact', area: 'clinicadmin', name: 'Edit clinic phone and contact details', detail: 'Clinics update their own phone and contact details.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true } },
+    { key: 'clinic.manage_managers', area: 'Clinic administration', name: 'Add, edit and remove managers',
+      detail: 'The Managers tab.' },
+    { key: 'clinic.see_managers', area: 'Clinic administration', name: 'See managers assigned to each location',
+      detail: 'Names and contact details per location.' },
+    { key: 'clinic.edit_contact', area: 'Clinic administration', name: 'Edit clinic phone and contact details',
+      detail: 'Update the clinic phone number and contact details.' },
+    { key: 'clinic.email_cc', area: 'Clinic administration', name: 'Choose who is cc\'d on patient emails',
+      detail: 'Per-clinic control of Qualiphy outbound email.' },
+    { key: 'clinic.notification_settings', area: 'Clinic administration', name: 'Change notification settings',
+      detail: 'Settings tab. Managers can do this today.' },
+    { key: 'clinic.white_label', area: 'Clinic administration', name: 'Edit white label settings',
+      detail: 'White Label tab. Managers can do this today.' },
 
-  // Integrations
-  { id: 'api.regenerate_key', area: 'integrations', name: 'Regenerate the clinic API key', detail: 'Issue a new key and retire the old one.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true } },
-  { id: 'api.per_location_key', area: 'integrations', name: 'Issue per-location API credentials', detail: 'Order-scoped and location-scoped credentials.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true } },
-  { id: 'api.assign_exam_key', area: 'integrations', name: 'Assign exams or an API key per exam', detail: 'Scope a credential to specific exams.', refs: [], urgent: false,
-    g: { super_admin: true } },
-  { id: 'api.view_integrations', area: 'integrations', name: 'See the Integrations page', detail: 'Self-service credential management in the clinic portal.', refs: [], urgent: false,
-    g: { super_admin: true, clinic_admin: true } },
+    { key: 'api.view_integrations', area: 'Integrations & credentials', name: 'View the Integrations page',
+      detail: 'Self-service credential management in the portal.' },
+    { key: 'api.regenerate_key', area: 'Integrations & credentials', name: 'Regenerate the clinic API key',
+      detail: 'Issue a new API key and retire the old one.' },
+    { key: 'api.per_location_key', area: 'Integrations & credentials', name: 'Issue per-location API credentials',
+      detail: 'Location-scoped and order-scoped credentials.' },
 
-  // Platform
-  { id: 'platform.manage_roles', area: 'platform', name: 'Create roles and assign them to users', detail: 'The bootstrap permission for role administration.', refs: [], urgent: false,
-    g: { super_admin: true } },
-  { id: 'platform.switch_accounts', area: 'platform', name: 'Switch between clinics with one login', detail: 'One email address holding several usertypes at once.', refs: [], urgent: false,
-    g: { super_admin: true, medical_director: true, clinic_admin: 'conditional' } },
-  { id: 'platform.usage_metrics', area: 'platform', name: 'View exam usage and metrics', detail: 'Per clinic, admin and provider.', refs: [], urgent: false,
-    g: { super_admin: true, support_specialist: true, clinic_admin: true, medical_director: true } },
-];
+    { key: 'roles.manage', area: 'Roles', name: 'Create roles and assign them to managers', adminOnly: true,
+      detail: 'This screen. Account owner only.' },
+  ];
 
-/* Org model - fake data */
-const ORG = {
-  name: 'Northstar Wellness Group',
-  id: 'org_4821',
-  refs: [],
-  locations: [
-    { id: 'clinic_5501', name: 'Northstar Wellness - Scottsdale', state: 'AZ', apiKey: 'nw_sc_••••7741', active: true },
-    { id: 'clinic_5502', name: 'Northstar Wellness - Tempe', state: 'AZ', apiKey: 'nw_te_••••2210', active: true },
-    { id: 'clinic_5503', name: 'Northstar Wellness - Henderson', state: 'NV', apiKey: 'nw_he_••••9034', active: true },
-    { id: 'clinic_5504', name: 'Northstar Wellness - Boise', state: 'ID', apiKey: null, active: false },
-  ],
-  people: [
-    { name: 'Dana Whitfield', email: 'dana@northstarwellness.example', role: 'medical_director', locations: ['clinic_5501', 'clinic_5502', 'clinic_5503', 'clinic_5504'] },
-    { name: 'Marcus Feld', email: 'marcus@northstarwellness.example', role: 'clinic_admin', locations: ['clinic_5501', 'clinic_5502'] },
-    { name: 'Priya Raman', email: 'priya@northstarwellness.example', role: 'clinic_manager', locations: ['clinic_5501'] },
-    { name: 'Joel Okafor', email: 'joel@northstarwellness.example', role: 'clinic_staff', locations: ['clinic_5503'] },
-  ],
-};
+  D.ROLES = [
+    { id: 1, name: 'Admin', system: true, locked: true,
+      description: 'Account owner. Full access to every location, billing and settings.', permissions: [] },
+    { id: 2, name: 'Manager', system: true,
+      description: 'Sends exams and reviews results for an assigned location. What a Manager can do today.',
+      permissions: ['exam.send_invite', 'exam.view_results', 'exam.intake_forms', 'billing.view_pricing', 'clinic.notification_settings', 'clinic.white_label'] },
+    { id: 3, name: 'Front Desk',
+      description: 'Sends exam invites and checks results. No pricing, billing or settings.',
+      permissions: ['exam.send_invite', 'exam.view_results'] },
+  ];
 
-/* Decisions this mockup exists to force */
-const DECISIONS = [
-  { id: 'd1', q: 'Can a Clinic Manager see pricing?', why: 'Admins may want to hide pricing from Managers. That only makes sense if Managers see it by default.', refs: [] },
-  { id: 'd2', q: 'Is Medical Director a role, or an account type?', why: 'One view makes it an account type that spans clinics and merges accounts; another makes it an authentication step. Those are different products.', refs: [] },
-  { id: 'd3', q: 'Does one email address hold many roles at once, or one role per account?', why: 'Several asks assume one login holds many roles. Every permission decision downstream depends on the answer.', refs: [] },
-  { id: 'd4', q: 'Are sub-locations an Org, or just clinics that share a billing contact?', why: 'A real Org object would let clinics move between Orgs. The locations work so far assumes the weaker model.', refs: [] },
-  { id: 'd5', q: 'Who can regenerate an API key?', why: 'Admin-only is the obvious answer, but a new key breaks every integration using the old one, so it may need super-admin approval.', refs: [] },
-  { id: 'd6', q: 'Is "conditional" a real grant type?', why: 'Several asks are not yes/no but "allowed, unless an Admin turns it off". If that is real, the data model needs a third state, not a boolean.', refs: [] },
-];
+  /* Real product copy from today's Managers tab and Add Manager modal. */
+  D.COPY = {
+    addManagerTip: 'Managers will have access to previous exams and be able to initiate new ones. However they will not be able to modify, edit or customize/create new ones.',
+    addManagerModalTip: 'Your manager will receive an email invite from Qualiphy prompting them to sign up. Once they set their password, they will have manager access for the assigned location below.',
+    addRoleTip: 'Roles decide what a manager can see and do. Admin and Manager are built in. Add a custom role, then assign it from the Managers tab.',
+    editorTip: 'Tick what this role can do. Managers assigned to it get exactly these permissions and nothing else.',
+    lockedTip: 'Admin is the account owner and always has every permission.',
+    changeRoleTip: 'The manager keeps their location. Only what they can see and do changes.',
+  };
+
+  /* ---------------------------------------------------------------- EPIC CONTEXT (public share build)
+     Same shape as the private block in v2/data.js, without ticket keys, colleague or customer names,
+     or security findings. Edit both when the epic changes. */
+  D.EPIC = {
+    title: 'Clinic Roles and Permissions',
+    status: 'In discovery. Stories follow the open answers.',
+    summary: 'Let a clinic admin define roles, choose what each role can do, and assign a role to each manager.',
+    problem: [
+      'Today a clinic has two user types, Admin and Manager, and Manager permissions are fixed. Clinics keep asking for one capability to be added to or removed from Managers, and each request is handled on its own.',
+      'Managers cannot export billing summaries. Enterprise clients are blocked and the team is covering by hand.',
+      'Admins want to hide pricing from Managers so staff do not quote the wrong number to patients.',
+      'Admins want to see which managers are on which location, with contact details.',
+      'Each of these is a missing-role problem, not a feature problem. A role model solves the class.',
+    ],
+    inScope: [
+      'Roles tab in the clinic portal, visible to the clinic Admin only.',
+      'Create, edit, duplicate and delete custom roles. Built-in roles cannot be deleted; Admin is locked with every permission.',
+      'Permission checklist: 23 clinic-side permissions in five areas.',
+      'Assign a role to each manager from the Managers tab, plus Managers-tab filtering for multi-location accounts.',
+      'Server-side enforcement of each permission on the endpoints the clinic portal uses.',
+      'Audit of who granted or changed a role and when.',
+      'Multi-location accounts: all-locations permissions apply across every location under the account.',
+    ],
+    outScope: [
+      'Qualiphy-internal roles (Super Admin, Support Specialist, Exam Quality Manager): a follow-on on the same role model.',
+      'Provider user types on the roadmap: a follow-on on the same role model.',
+      'Medical Director verification, one email holding several account types, a formal Organization object, and provider-side permissions.',
+    ],
+    decisions: [
+      { id: 'D1', state: 'decided', q: 'Can Clinic Managers see exam and medication pricing?', a: 'Yes, by default (decided Sep 15). Invites already show the sender the exam and medication prices. A Clinic Admin may still turn pricing off for a role.', demo: 'The built-in Manager role includes pricing.' },
+      { id: 'D2', state: 'open', q: 'Is Medical Director a role or an account type?', a: 'Decides whether Medical Director requests belong here. Proposed: out of scope.', demo: 'Not in the demo.' },
+      { id: 'D3', state: 'open', q: 'Does one manager hold one role or many?', a: 'Answer pending.', demo: 'One role per manager, like the prototype.' },
+      { id: 'D4', state: 'open', q: 'Are sub-locations an Org, or clinics sharing a billing contact?', a: 'The locations work so far assumes the second.', demo: 'Two locations under one account; the all-locations permission appears.' },
+      { id: 'D5', state: 'open', q: 'Who can regenerate an API key?', a: 'A new key breaks every integration using the old one, so it may need super-admin approval.', demo: 'An ordinary permission any role can hold.' },
+      { id: 'D6', state: 'open', q: 'Is a permission on by default, with the Clinic Admin able to switch it off (an admin override)?', a: 'If yes, a permission has three states (on, off, on unless overridden), which is a data-model question for engineering.', demo: 'Checkboxes: on or off.' },
+      { id: 'Eng', state: 'open', q: 'Do permissions map onto role names, or does the role model need a permissions table?', a: 'The role model stores roles and role assignments with no permissions concept. Engineering decides before the backend story is written, along with hard constraints such as the audit trail for privilege grants.', demo: 'Roles hold a list of permissions.' },
+    ],
+    prototype: 'Built inside a local copy of the clinic portal on Sep 14, 2026 with the portal\'s own Managers-tab components. This demo reproduces those screens outside the portal code.',
+  };
+})();
